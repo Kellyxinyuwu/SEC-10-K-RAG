@@ -19,9 +19,14 @@
 
 ## Connection
 
-Default: `postgresql://postgres:postgres@localhost:5432/rag_db`
+Copy `.env.example` to `.env` and set your values:
 
-Override with env: `export DATABASE_URL="postgresql://user:pass@host:5432/dbname"`
+```bash
+cp .env.example .env
+# Edit .env with your DATABASE_URL, HF_TOKEN, etc.
+```
+
+Or override with env: `export DATABASE_URL="postgresql://user:pass@host:5432/dbname"`
 
 ## Run Ingestion
 

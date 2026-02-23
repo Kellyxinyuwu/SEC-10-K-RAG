@@ -1,21 +1,40 @@
 """
 Retrieve relevant chunks from pgvector for a query.
 """
+import logging
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Suppress SentenceTransformers BertModel load report (UNEXPECTED key warnings)
+logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
+
+# Default: use current user (macOS/Homebrew) or postgres (Docker)
+_default_user = os.environ.get("USER", "postgres")
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/rag_db",
+    f"postgresql://{_default_user}@localhost:5432/rag_db",
 )
+
+_embedding_model = None
+
+
+def _get_embedding_model():
+    """Lazy-load and cache the SentenceTransformer model."""
+    global _embedding_model
+    if _embedding_model is None:
+        from sentence_transformers import SentenceTransformer
+
+        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _embedding_model
 
 
 def embed_query(query: str) -> list[float]:
     """Embed a single query string."""
-    from sentence_transformers import SentenceTransformer
-
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-    return model.encode([query])[0].tolist()
+    return _get_embedding_model().encode([query])[0].tolist()
 
 
 def retrieve_context(query: str, k: int = 5, ticker: str | None = None) -> list[dict]:
@@ -67,7 +86,7 @@ if __name__ == "__main__":
     import sys
 
     query = sys.argv[1] if len(sys.argv) > 1 else "What are Apple's main risk factors?"
-    results = retrieve_context(query, k=3)
+    results = retrieve_context(query, k=6)
     print(f"Query: {query}\n")
     for i, r in enumerate(results, 1):
         print(f"--- Result {i} ({r['ticker']}) ---")

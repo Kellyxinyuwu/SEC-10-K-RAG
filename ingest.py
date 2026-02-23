@@ -4,7 +4,11 @@ Tiny RAG ingestion: load 10-K txt files, chunk with overlap, embed, store in pgv
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 import tiktoken
+
+load_dotenv()
 
 # Paths
 SEC_FILINGS_DIR = Path("sec-edgar-filings")
@@ -14,9 +18,11 @@ CHUNK_SIZE_TOKENS = 400
 CHUNK_OVERLAP_TOKENS = 100
 
 # pgvector connection (override with env: DATABASE_URL)
+# Default: use current user (macOS/Homebrew) or postgres (Docker)
+_default_user = os.environ.get("USER", "postgres")
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@localhost:5432/rag_db",
+    f"postgresql://{_default_user}@localhost:5432/rag_db",
 )
 
 
