@@ -1,5 +1,16 @@
 """
 FastAPI server with /ask endpoint for RAG queries.
+
+GUIDE:
+------
+- GET /         → Health check
+- GET /ask?q=... → RAG query. Params: q (required), k (default 6), ticker (optional)
+- GET /docs     → Swagger UI
+
+Ticker is inferred from query if omitted (e.g. "Alphabet" → GOOGL).
+Uses rag.answer_with_rag() under the hood.
+
+Run: python api.py  or  uvicorn api:app --host 0.0.0.0 --port 8001
 """
 from dotenv import load_dotenv
 

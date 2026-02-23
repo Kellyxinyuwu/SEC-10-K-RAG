@@ -1,5 +1,18 @@
 """
 Evaluate RAG on a set of Q&A pairs.
+
+GUIDE:
+------
+1. load_qa_pairs() → Load from eval_qa.json (q, ticker, expected_keywords)
+2. run_eval()      → For each question: answer_with_rag() → check keywords → record
+3. print_report()  → Summary: passed/failed, per-question details
+4. save_to_excel() → Write eval_results.xlsx (question, answer, ticker, sources_count, time_sec, passed, keywords_found, keywords_missed)
+
+expected_keywords: You define in JSON. Eval checks if answer contains them.
+  PASS = all found; FAIL = any missed; N/A = no keywords defined
+
+Run: python eval.py
+Runtime: ~10–15 min for 50 questions (each ~10–20 seconds)
 """
 from dotenv import load_dotenv
 

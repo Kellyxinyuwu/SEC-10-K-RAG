@@ -1,5 +1,15 @@
 """
 Retrieve relevant chunks from pgvector for a query.
+
+GUIDE:
+------
+1. embed_query(query)       → Embeds query with SentenceTransformer (cached after first call)
+2. retrieve_context(query, k, ticker) → SELECT top-k chunks by vector similarity (<=>)
+   - If ticker given: WHERE ticker = X (focused retrieval)
+   - Order by embedding <=> query_embedding (cosine distance, smaller = more similar)
+
+Run: python retrieve.py "What are Apple's main risk factors?"
+Requires: DATABASE_URL, ingested documents in pgvector
 """
 import logging
 import os
@@ -40,7 +50,11 @@ def embed_query(query: str) -> list[float]:
 def retrieve_context(query: str, k: int = 5, ticker: str | None = None) -> list[dict]:
     """
     Retrieve top-k most relevant chunks for a query.
-    Returns list of dicts with keys: content, ticker, source.
+
+    Uses pgvector's <=> operator (cosine distance). Lower distance = more similar.
+    If ticker is set, filters to that ticker only (e.g. GOOGL for Alphabet questions).
+
+    Returns list of dicts: [{"content": str, "ticker": str, "source": str}, ...]
     """
     import numpy as np
     import psycopg2
