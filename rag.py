@@ -1,5 +1,16 @@
 """
 RAG answer: retrieve context, build prompt, call Ollama, return answer with citations.
+
+GUIDE:
+------
+1. infer_ticker_from_query(query) → Maps "Alphabet" → GOOGL, "Apple" → AAPL (TICKER_MAP)
+2. retrieve_context(query, k, ticker) → Get top-k chunks from retrieve.py
+3. build_rag_prompt(query, contexts) → Format context + question + citation instructions
+4. call_ollama(prompt) → Send to Ollama llama3.2, get response
+5. answer_with_rag() → Orchestrates all above, returns {answer, sources}
+
+Run: python rag.py "What are Alphabet's main risks?"
+Requires: Ollama running with llama3.2, ingested data
 """
 from dotenv import load_dotenv
 
@@ -55,7 +66,8 @@ def answer_with_rag(query: str, k: int = 5, ticker: str | None = None) -> dict:
     }
 
 
-# Map company names (lowercase) to ticker symbols for focused retrieval
+# Map company names (lowercase) to ticker symbols for focused retrieval.
+# Used by infer_ticker_from_query() so "Alphabet's risks" → ticker=GOOGL
 TICKER_MAP = {
     "alphabet": "GOOGL",
     "google": "GOOGL",
