@@ -11,9 +11,9 @@ GUIDE:
 Run: python -m tiny_rag.retrieve "What are Apple's main risk factors?"
 Requires: DATABASE_URL, ingested documents in pgvector
 """
+
 import logging
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -93,10 +93,7 @@ def retrieve_context(query: str, k: int = 5, ticker: str | None = None) -> list[
     cur.close()
     conn.close()
 
-    return [
-        {"content": row[0], "ticker": row[1], "source": row[2]}
-        for row in rows
-    ]
+    return [{"content": row[0], "ticker": row[1], "source": row[2]} for row in rows]
 
 
 if __name__ == "__main__":

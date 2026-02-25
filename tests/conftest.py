@@ -1,6 +1,7 @@
 """
 Pytest fixtures for tiny_rag tests.
 """
+
 import pytest
 from fastapi.testclient import TestClient
 

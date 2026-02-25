@@ -14,11 +14,13 @@ expected_keywords: You define in JSON. Eval checks if answer contains them.
 Run: python -m tiny_rag.eval
 Runtime: ~10–15 min for 50 questions (each ~10–20 seconds)
 """
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 import json
+
 from .logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -56,16 +58,18 @@ def run_eval(qa_pairs: list[dict], k: int = 6) -> list[dict]:
         keywords_missed = [kw for kw in expected if kw.lower() not in answer_lower]
         passed = len(keywords_missed) == 0 if expected else None
 
-        results.append({
-            "question": q,
-            "answer": result["answer"],
-            "sources_count": len(result["sources"]),
-            "ticker": ticker,
-            "time_sec": round(elapsed, 2),
-            "keywords_found": ", ".join(keywords_found),
-            "keywords_missed": ", ".join(keywords_missed),
-            "passed": "PASS" if passed else ("FAIL" if passed is False else "N/A"),
-        })
+        results.append(
+            {
+                "question": q,
+                "answer": result["answer"],
+                "sources_count": len(result["sources"]),
+                "ticker": ticker,
+                "time_sec": round(elapsed, 2),
+                "keywords_found": ", ".join(keywords_found),
+                "keywords_missed": ", ".join(keywords_missed),
+                "passed": "PASS" if passed else ("FAIL" if passed is False else "N/A"),
+            }
+        )
     return results
 
 

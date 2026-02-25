@@ -2,6 +2,8 @@
 
 RAG pipeline for SEC 10-K filings. Ingest → vector store (pgvector) → retrieve → LLM (Ollama) → FastAPI.
 
+**Learning project** for exploring RAG and deployment tooling. Focus areas: security (API key auth), structured logging, health checks, retries, testing (pytest), CI (GitHub Actions), Docker.
+
 ---
 
 ## Requirements

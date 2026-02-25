@@ -1,7 +1,6 @@
 """
 Unit tests for tiny_rag.rag.
 """
-import pytest
 
 from tiny_rag.rag import build_rag_prompt, infer_ticker_from_query
 

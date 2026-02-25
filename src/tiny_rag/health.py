@@ -1,9 +1,10 @@
 """
 Health check utilities for DB and Ollama.
 """
+
 import os
-from urllib.request import urlopen
 from urllib.error import URLError
+from urllib.request import urlopen
 
 from dotenv import load_dotenv
 

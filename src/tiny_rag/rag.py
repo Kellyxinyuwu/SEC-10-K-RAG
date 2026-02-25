@@ -12,13 +12,14 @@ GUIDE:
 Run: python -m tiny_rag.rag "What are Alphabet's main risks?"
 Requires: Ollama running with llama3.2, ingested data
 """
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from .logging_config import get_logger
-from .retry_config import retry_ollama
 from .retrieve import retrieve_context
+from .retry_config import retry_ollama
 
 logger = get_logger(__name__)
 
@@ -52,7 +53,6 @@ def call_ollama(prompt: str, model: str = "llama3.2") -> str:
     return response["message"]["content"]
 
 
-
 def answer_with_rag(query: str, k: int = 5, ticker: str | None = None) -> dict:
     """
     Retrieve context, call LLM, return answer with citations.
@@ -67,7 +67,9 @@ def answer_with_rag(query: str, k: int = 5, ticker: str | None = None) -> dict:
 
     return {
         "answer": answer,
-        "sources": [{"ticker": c["ticker"], "content": c["content"][:200] + "..."} for c in contexts],
+        "sources": [
+            {"ticker": c["ticker"], "content": c["content"][:200] + "..."} for c in contexts
+        ],
     }
 
 

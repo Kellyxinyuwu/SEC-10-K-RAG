@@ -1,7 +1,6 @@
 """
 Unit tests for tiny_rag.ingest.
 """
-import pytest
 
 from tiny_rag.ingest import chunk_with_overlap, load_txt
 

@@ -3,6 +3,7 @@ Retry decorators for transient failures (DB, Ollama, network).
 
 Config: 3 attempts, exponential backoff 1s–10s.
 """
+
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -18,9 +19,7 @@ def _db_retry():
     return retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type(
-            (psycopg2.OperationalError, psycopg2.InterfaceError)
-        ),
+        retry=retry_if_exception_type((psycopg2.OperationalError, psycopg2.InterfaceError)),
         reraise=True,
     )
 

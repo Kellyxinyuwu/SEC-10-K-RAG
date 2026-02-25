@@ -6,6 +6,7 @@ Configure once at startup, then use: from tiny_rag.logging_config import get_log
 Env: LOG_FORMAT=json for JSON output (production), default is pretty console.
      LOG_LEVEL=INFO|DEBUG|WARNING|ERROR
 """
+
 import os
 
 import structlog
