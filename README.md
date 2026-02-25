@@ -12,19 +12,21 @@ A RAG (Retrieval Augmented Generation) project for financial documents (10-K fil
 
 1. [What This Project Does](#what-this-project-does)
 2. [How the Project Was Built](#how-the-project-was-built)
-3. [Project Structure & File Guide](#project-structure--file-guide) — See also **CODE_GUIDE.md**
+3. [Project Structure & File Guide](#project-structure--file-guide)
 4. [Tech Stack](#tech-stack)
 5. [Setup](#setup)
-6. [Run](#run)
-7. [Chunking Method](#chunking-method)
-8. [RAG Optimizations](#rag-optimizations)
-9. [API](#api)
-10. [Evaluation](#evaluation)
-11. [Troubleshooting](#troubleshooting)
-12. [Learning Purpose & Gaps vs Production](#learning-purpose--gaps-vs-production)
-13. [What's Next](#whats-next)
+6. [Data & Documents](#data--documents)
+7. [Run](#run)
+8. [Chunking Method](#chunking-method)
+9. [RAG Optimizations](#rag-optimizations)
+10. [API](#api)
+11. [Evaluation](#evaluation)
+12. [Troubleshooting](#troubleshooting)
+13. [Learning Purpose & Gaps vs Production](#learning-purpose--gaps-vs-production)
+14. [What's Next](#whats-next)
+15. [Git Workflow](#git-workflow)
 
-See **DATA_GUIDE.md** for SEC EDGAR details. See **INGEST_GUIDE.md** for ingestion setup. See **CODE_GUIDE.md** for a file-by-file code walkthrough.
+See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) for a detailed file-by-file code walkthrough.
 
 ---
 
@@ -97,10 +99,8 @@ tiny-rag-warmup/
 ├── .env.example                  # Template for HF_TOKEN, DATABASE_URL
 ├── requirements.txt
 ├── README.md                     # This file
-├── CODE_GUIDE.md                 # File-by-file code walkthrough
-├── INGEST_GUIDE.md               # Ingestion & retrieval setup
-├── DATA_GUIDE.md                 # SEC EDGAR, data paths, stack choices
-└── BRANCH_SETUP.md               # Git branch workflow
+└── docs/
+    └── CODE_GUIDE.md             # File-by-file code walkthrough
 ```
 
 ### File-by-File Guide
@@ -174,6 +174,66 @@ cp .env.example .env
 **DATABASE_URL formats:**
 - Docker: `postgresql://postgres:postgres@localhost:5432/rag_db`
 - Homebrew (macOS): `postgresql://YOUR_USERNAME@localhost:5432/rag_db` (use `whoami` for username)
+
+---
+
+## Data & Documents
+
+### SEC EDGAR — Where to Get Documents
+
+**SEC EDGAR** hosts all public company filings in the US. It's free and requires no API key.
+
+- **Website:** [sec.gov/edgar](https://www.sec.gov/edgar)
+- **Search:** [sec.gov/cgi-bin/browse-edgar](https://www.sec.gov/cgi-bin/browse-edgar)
+
+| Filing | Description |
+|--------|-------------|
+| **10-K** | Annual report — full-year financials, risk factors, MD&A |
+| **10-Q** | Quarterly report — quarterly financials |
+| **8-K** | Current report — material events (earnings, acquisitions) |
+
+For RAG, **10-K** is usually the best starting point.
+
+### Two Pipeline Paths
+
+**Path A: Direct (recommended)** — `download_financial_docs.py` gives you txt directly:
+
+```bash
+python download_financial_docs.py
+```
+
+Output: `sec-edgar-filings/{ticker}/10-K/{accession}/full-submission.txt` — ready for RAG.
+
+**Path B: Raw → Process** — For PDF, XML, or HTML from other sources:
+
+```bash
+# 1. Put raw files in data/ (XML, PDF, HTML)
+# 2. Run the processor
+python process_documents.py
+```
+
+Output: `sec-edgar-filings/processed/*.txt`. Avoid "Inline XBRL Viewer" XML — use the main document.
+
+**Manual download:** Go to [sec.gov/cgi-bin/browse-edgar](https://www.sec.gov/cgi-bin/browse-edgar) → search by ticker → Filings → 10-K → Documents → download main `.htm` → save to `data/` → run `process_documents.py`.
+
+### Ingestion Flow
+
+```
+ingest.py:
+  find_filing_txt_files()     → list of (path, ticker)
+  load_txt(path)              → full text
+  chunk_with_overlap(text)    → list of chunks (tiktoken)
+  embed_chunks(chunks)        → list of embeddings (SentenceTransformers)
+  store_in_pgvector(...)      → INSERT into documents table
+
+retrieve.py:
+  embed_query(query)          → query embedding
+  retrieve_context(query, k)  → SELECT ... ORDER BY embedding <=> query LIMIT k
+```
+
+### Switching to AWS Later
+
+When you deploy to AWS: replace Ollama with Bedrock for LLM; use Bedrock Titan Embeddings; point to pgvector on RDS (same API, different connection).
 
 ---
 
@@ -374,7 +434,7 @@ This project is for **learning and prototyping**, not production. Below is what 
 
 ---
 
-## Git Notes
+## Git Workflow
 
 | Command | Purpose |
 |---------|---------|
@@ -382,4 +442,30 @@ This project is for **learning and prototyping**, not production. Below is what 
 | `git commit -m "message"` | Commit |
 | `git push` | Push to remote |
 
-**Branches:** See **BRANCH_SETUP.md** for `main`, `feature/extended`, `feature/rag-optimizations` workflow.
+### Branch Setup
+
+| Branch | Purpose |
+|--------|---------|
+| **main** | Original baseline (PDF + simple chunk) |
+| **original** | Backup of original (same as main) |
+| **feature/extended** | Extended pipeline; active development |
+| **feature/organized** | Current branch with organized docs |
+
+### Workflow
+
+```bash
+# Work on a feature branch
+git checkout feature/organized   # or feature/extended
+
+# When ready to merge to main
+git checkout main
+git merge feature/organized
+git push origin main
+```
+
+### Verify
+
+```bash
+git branch -a
+git log --oneline -3
+```
