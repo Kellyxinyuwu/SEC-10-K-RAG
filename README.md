@@ -33,7 +33,7 @@ See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) for a detailed file-by-file code wa
 ## What This Project Does
 
 1. **Download** 10-K filings from SEC EDGAR (Apple, Alphabet)
-2. **Extract** text from the full submission (or convert PDF/HTML/XML via `process_documents.py`)
+2. **Extract** text from the full submission (or convert PDF/HTML/XML via `scripts/process_documents.py`)
 3. **Chunk** text with token-based overlap (400 tokens, 100 overlap)
 4. **Embed** chunks with SentenceTransformers and **store** in pgvector
 5. **Retrieve** top-k chunks by semantic similarity
@@ -47,14 +47,14 @@ See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) for a detailed file-by-file code wa
 
 ### Phase 1: Data & Ingestion
 
-1. Downloaded 10-K filings via `download_financial_docs.py` → `sec-edgar-filings/{ticker}/10-K/.../full-submission.txt`
-2. Extended `ingest.py` to load txt, chunk with tiktoken, embed with SentenceTransformers, store in pgvector
+1. Downloaded 10-K filings via `scripts/download_financial_docs.py` → `sec-edgar-filings/{ticker}/10-K/.../full-submission.txt`
+2. Extended `tiny_rag.ingest` to load txt, chunk with tiktoken, embed with SentenceTransformers, store in pgvector
 3. Set up pgvector (Docker or local PostgreSQL) with `CREATE EXTENSION vector` and `documents` table
 
 ### Phase 2: Retrieval & RAG
 
-4. Implemented `retrieve.py` with `retrieve_context(query, k)` — vector similarity search
-5. Implemented `rag.py` with `answer_with_rag()` — retrieve → build prompt → call Ollama → return answer with citations
+4. Implemented `tiny_rag.retrieve` with `retrieve_context(query, k)` — vector similarity search
+5. Implemented `tiny_rag.rag` with `answer_with_rag()` — retrieve → build prompt → call Ollama → return answer with citations
 
 ### Phase 3: Optimizations
 
@@ -65,9 +65,9 @@ See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) for a detailed file-by-file code wa
 
 ### Phase 4: API & Evaluation
 
-10. Added FastAPI `api.py` with `/ask` endpoint (query params: `q`, `k`, `ticker`)
+10. Added FastAPI `tiny_rag.api` with `/ask` endpoint (query params: `q`, `k`, `ticker`)
 11. Created `eval_qa.json` with 50 Q&A pairs (25 GOOGL, 25 AAPL) and `expected_keywords`
-12. Implemented `eval.py` — runs RAG on each question, checks keywords, saves to `eval_results.xlsx`
+12. Implemented `tiny_rag.eval` — runs RAG on each question, checks keywords, saves to `eval_results.xlsx`
 13. Added progress output in eval for long runs
 
 ### Phase 5: Configuration
@@ -81,37 +81,42 @@ See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md) for a detailed file-by-file code wa
 
 ```
 tiny-rag-warmup/
-├── data/                         # Raw files (PDF, XML, HTML) for process_documents.py
+├── README.md
+├── docs/
+│   └── CODE_GUIDE.md             # File-by-file code walkthrough
+├── src/
+│   └── tiny_rag/                 # Python package
+│       ├── __init__.py
+│       ├── ingest.py             # Chunk, embed, store in pgvector
+│       ├── retrieve.py           # Vector search: embed query, SELECT by similarity
+│       ├── rag.py                # RAG pipeline: retrieve → prompt → Ollama → answer
+│       ├── api.py                # FastAPI /ask endpoint
+│       └── eval.py               # Evaluation script (50 Q&A, keyword check, Excel)
+├── scripts/                     # CLI entry points
+│   ├── download_financial_docs.py  # SEC EDGAR download → full-submission.txt
+│   └── process_documents.py       # Raw PDF/HTML/XML → txt conversion
 ├── sec-edgar-filings/            # Downloaded 10-Ks
 │   ├── AAPL/10-K/.../full-submission.txt
 │   ├── GOOGL/10-K/.../full-submission.txt
-│   └── processed/                # Output from process_documents.py
-├── download_financial_docs.py    # SEC EDGAR download → full-submission.txt
-├── process_documents.py          # Raw PDF/HTML/XML → txt conversion
-├── ingest.py                     # Chunk, embed, store in pgvector (see Chunking below)
-├── retrieve.py                   # Vector search: embed query, SELECT by similarity
-├── rag.py                        # RAG pipeline: retrieve → prompt → Ollama → answer
-├── api.py                        # FastAPI /ask endpoint
-├── eval.py                       # Evaluation script (50 Q&A, keyword check, Excel)
+│   └── processed/               # Output from process_documents.py
+├── data/                         # Raw files (PDF, XML, HTML) for process_documents.py
 ├── eval_qa.json                  # 50 Q&A pairs with expected_keywords
-├── eval_results.xlsx             # Output from eval.py (generated)
+├── eval_results.xlsx             # Output from eval (generated)
 ├── .env                          # Secrets (not committed). Copy from .env.example
 ├── .env.example                  # Template for HF_TOKEN, DATABASE_URL
 ├── requirements.txt
-├── README.md                     # This file
-└── docs/
-    └── CODE_GUIDE.md             # File-by-file code walkthrough
+└── pyproject.toml
 ```
 
 ### File-by-File Guide
 
 | File | Purpose | Key Functions |
 |------|---------|---------------|
-| **ingest.py** | Load 10-K txt, chunk, embed, store | `chunk_with_overlap()`, `embed_chunks()`, `store_in_pgvector()` |
-| **retrieve.py** | Embed query, search pgvector | `embed_query()`, `retrieve_context()` |
-| **rag.py** | Build prompt, call Ollama | `build_rag_prompt()`, `answer_with_rag()`, `infer_ticker_from_query()` |
-| **api.py** | HTTP API | `GET /ask?q=...&k=6&ticker=GOOGL` |
-| **eval.py** | Run eval, keyword check, Excel | `run_eval()`, `save_to_excel()` |
+| **tiny_rag.ingest** | Load 10-K txt, chunk, embed, store | `chunk_with_overlap()`, `embed_chunks()`, `store_in_pgvector()` |
+| **tiny_rag.retrieve** | Embed query, search pgvector | `embed_query()`, `retrieve_context()` |
+| **tiny_rag.rag** | Build prompt, call Ollama | `build_rag_prompt()`, `answer_with_rag()`, `infer_ticker_from_query()` |
+| **tiny_rag.api** | HTTP API | `GET /ask?q=...&k=6&ticker=GOOGL` |
+| **tiny_rag.eval** | Run eval, keyword check, Excel | `run_eval()`, `save_to_excel()` |
 
 ---
 
@@ -135,6 +140,7 @@ tiny-rag-warmup/
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+pip install -e .            # Install tiny_rag package in editable mode
 ```
 
 ### 2. PostgreSQL + pgvector
@@ -196,10 +202,10 @@ For RAG, **10-K** is usually the best starting point.
 
 ### Two Pipeline Paths
 
-**Path A: Direct (recommended)** — `download_financial_docs.py` gives you txt directly:
+**Path A: Direct (recommended)** — `scripts/download_financial_docs.py` gives you txt directly:
 
 ```bash
-python download_financial_docs.py
+python scripts/download_financial_docs.py
 ```
 
 Output: `sec-edgar-filings/{ticker}/10-K/{accession}/full-submission.txt` — ready for RAG.
@@ -209,12 +215,12 @@ Output: `sec-edgar-filings/{ticker}/10-K/{accession}/full-submission.txt` — re
 ```bash
 # 1. Put raw files in data/ (XML, PDF, HTML)
 # 2. Run the processor
-python process_documents.py
+python scripts/process_documents.py
 ```
 
 Output: `sec-edgar-filings/processed/*.txt`. Avoid "Inline XBRL Viewer" XML — use the main document.
 
-**Manual download:** Go to [sec.gov/cgi-bin/browse-edgar](https://www.sec.gov/cgi-bin/browse-edgar) → search by ticker → Filings → 10-K → Documents → download main `.htm` → save to `data/` → run `process_documents.py`.
+**Manual download:** Go to [sec.gov/cgi-bin/browse-edgar](https://www.sec.gov/cgi-bin/browse-edgar) → search by ticker → Filings → 10-K → Documents → download main `.htm` → save to `data/` → run `python scripts/process_documents.py`.
 
 ### Ingestion Flow
 
@@ -243,27 +249,26 @@ When you deploy to AWS: replace Ollama with Bedrock for LLM; use Bedrock Titan E
 
 ```bash
 # 1. Download 10-Ks (edit COMPANY_NAME, COMPANY_EMAIL in script first)
-python download_financial_docs.py
+python scripts/download_financial_docs.py
 
 # 2. Ingest: chunk, embed, store
-python ingest.py
+python -m tiny_rag.ingest
 
 # 3. Test RAG (CLI)
-python rag.py "What are Alphabet's main risks?"
+python -m tiny_rag.rag "What are Alphabet's main risks?"
 
 # 4. Start API server
-python api.py
-# Or: uvicorn api:app --host 0.0.0.0 --port 8001
+uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001
 
 # 5. Run evaluation
-python eval.py
+python -m tiny_rag.eval
 ```
 
 ### Quick test
 
 ```bash
 # If already ingested
-python rag.py "What are Apple's main risk factors?"
+python -m tiny_rag.rag "What are Apple's main risk factors?"
 curl "http://localhost:8001/ask?q=What%20are%20Alphabet%27s%20main%20risks%3F"
 ```
 
@@ -303,8 +308,7 @@ The project uses **token-based fixed-size chunking with overlap**.
 
 **Start server:**
 ```bash
-python api.py
-# Or: uvicorn api:app --host 0.0.0.0 --port 8001
+uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001
 ```
 
 **Endpoints:**
@@ -330,7 +334,7 @@ curl "http://localhost:8001/ask?q=What%20are%20Alphabet%27s%20main%20risks%3F"
 
 **Run:**
 ```bash
-python eval.py
+python -m tiny_rag.eval
 ```
 
 **What it does:**
@@ -375,14 +379,14 @@ psql -d rag_db -c "CREATE EXTENSION vector;"
 
 Run ingestion:
 ```bash
-python ingest.py
+python -m tiny_rag.ingest
 ```
 
 ### Port 8000 already in use
 
 Use a different port:
 ```bash
-uvicorn api:app --host 0.0.0.0 --port 8001
+uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001
 ```
 
 ### Eval seems stuck
