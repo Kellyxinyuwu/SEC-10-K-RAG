@@ -12,12 +12,12 @@ GUIDE:
 Run: python -m tiny_rag.ingest
 Requires: DATABASE_URL in .env, pgvector running, sec-edgar-filings/ populated
 """
+
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 import tiktoken
+from dotenv import load_dotenv
 
 load_dotenv()
 

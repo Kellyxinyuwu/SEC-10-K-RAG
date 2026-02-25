@@ -13,6 +13,7 @@ Uses rag.answer_with_rag() under the hood.
 
 Run: uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001
 """
+
 import os
 import time
 import uuid
@@ -21,11 +22,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import structlog
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
-import structlog
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
@@ -72,7 +73,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         elapsed_ms = (time.perf_counter() - start) * 1000
 
         response.headers["X-Request-ID"] = request_id
-        logger.info("request_end", status_code=response.status_code, elapsed_ms=round(elapsed_ms, 1))
+        logger.info(
+            "request_end", status_code=response.status_code, elapsed_ms=round(elapsed_ms, 1)
+        )
         structlog.contextvars.unbind_contextvars("request_id")
 
         return response

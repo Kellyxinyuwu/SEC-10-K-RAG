@@ -1,9 +1,9 @@
 """
 Integration tests for tiny_rag.api.
 """
+
 from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from tiny_rag.api import app

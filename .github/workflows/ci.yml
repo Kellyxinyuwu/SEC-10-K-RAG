@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, feature/organized]
+    branches: [main, feature/organized, feature/final-organize]
   pull_request:
-    branches: [main, feature/organized]
+    branches: [main, feature/organized, feature/final-organize]
 
 jobs:
   lint:
