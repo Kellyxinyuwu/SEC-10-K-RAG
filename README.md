@@ -74,7 +74,7 @@ export DATABASE_URL="postgresql://postgres:postgres@localhost:5433/rag_db"
 uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001
 ```
 
-Keep this terminal open. API runs on **http://localhost:8001**.
+Keep this terminal open. API runs on **http://localhost:8001**. If `uvicorn` fails, try `python3 -m uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001`.
 
 ### 8. Test (in another terminal)
 
@@ -140,14 +140,14 @@ docker run -d --name pgvector -p 5432:5432 -e POSTGRES_PASSWORD=postgres pgvecto
 docker exec -it pgvector psql -U postgres -c "CREATE DATABASE rag_db;"
 docker exec -it pgvector psql -U postgres -d rag_db -c "CREATE EXTENSION vector;"
 
-# 3. Config
+# 3. Config (optional — or use export below)
 cp .env.example .env
-# Set DATABASE_URL=postgresql://postgres:postgres@localhost:5432/rag_db
+# Edit .env: DATABASE_URL=postgresql://postgres:postgres@localhost:5432/rag_db
 
 # 4. Download, ingest, run
 ollama pull llama3.2
 python3 scripts/download_financial_docs.py   # Edit COMPANY_NAME, COMPANY_EMAIL first
-export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/rag_db"
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/rag_db"   # or rely on .env
 python3 -m tiny_rag.ingest
 uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8000
 
@@ -232,6 +232,8 @@ SEC-10-K-RAG/
 | `could not translate host name "db"` | Run ingest from host: `DATABASE_URL=postgresql://postgres:postgres@localhost:5433/rag_db python3 -m tiny_rag.ingest` |
 | `Empty reply from server` (Docker API) | Run API locally: `uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001` |
 | Port in use | Use different port: `uvicorn tiny_rag.api:app --port 8001` |
+| `exec: .../python3.14: cannot execute` or `No such file or directory` when running uvicorn | Reinstall uvicorn: `pip3 install --force-reinstall uvicorn`. Or use `python3 -m uvicorn tiny_rag.api:app --host 0.0.0.0 --port 8001` |
+| `No services to build` (Docker Compose) | Expected when starting only `db` — it uses a pre-built image. The DB is running. |
 
 ---
 
