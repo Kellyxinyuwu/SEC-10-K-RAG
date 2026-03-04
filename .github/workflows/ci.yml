@@ -55,6 +55,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: tiny-rag-warmup:test
+          tags: sec-10k-rag:test
           cache-from: type=gha
           cache-to: type=gha,mode=max

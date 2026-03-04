@@ -51,7 +51,7 @@ def verify_api_key(api_key: str | None = Depends(api_key_header)) -> None:
 
 
 app = FastAPI(
-    title="Tiny RAG API",
+    title="SEC-10-K-RAG API",
     description="Ask questions about 10-K financial documents. Requires X-API-Key header if API_KEY is set.",
     version="0.1.0",
     swagger_ui_parameters={"persistAuthorization": True},
