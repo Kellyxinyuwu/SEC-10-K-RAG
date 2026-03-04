@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tiny-rag-warmup"
+name = "sec-10k-rag"
 version = "0.1.0"
 description = "RAG pipeline for financial 10-K documents"
 requires-python = ">=3.10"

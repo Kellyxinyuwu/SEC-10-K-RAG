@@ -1,4 +1,4 @@
-# Tiny RAG — Financial Documents
+# SEC-10-K-RAG — Financial Documents
 
 RAG pipeline for SEC 10-K filings. Ingest → vector store (pgvector) → retrieve → LLM (Ollama) → FastAPI.
 
@@ -22,7 +22,7 @@ This section lists all commands to run the project from scratch. Use `pip3` and 
 ### 1. Clone and setup environment
 
 ```bash
-cd tiny-rag-warmup
+cd SEC-10-K-RAG
 python3 -m venv .venv
 source .venv/bin/activate   # On Windows: .venv\Scripts\activate
 pip3 install -r requirements.txt
@@ -164,7 +164,7 @@ python3 -m tiny_rag.eval
 ## Project Structure
 
 ```
-tiny-rag-warmup/
+SEC-10-K-RAG/
 ├── src/tiny_rag/          # Package: ingest, retrieve, rag, api, eval
 ├── scripts/               # download_financial_docs, process_documents
 ├── docs/CODE_GUIDE.md     # API reference
@@ -249,4 +249,4 @@ DB and Ollama calls use tenacity retries (3 attempts, exponential backoff 1s–1
 - **API:** Add auth (API keys, OAuth), rate limiting, structured logging.
 - **Ingestion:** Schedule via cron, Airflow, or event-driven pipeline.
 
-See [docs/PRODUCTION_OPTIMIZATIONS.md](docs/PRODUCTION_OPTIMIZATIONS.md) for a comprehensive overview. See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md), [docs/DOCKER_GUIDE.md](docs/DOCKER_GUIDE.md), [docs/AUTH_GUIDE.md](docs/AUTH_GUIDE.md), [docs/LOGGING_GUIDE.md](docs/LOGGING_GUIDE.md), [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md), [docs/CI_GUIDE.md](docs/CI_GUIDE.md).
+See [docs/PRODUCTION_OPTIMIZATIONS.md](docs/PRODUCTION_OPTIMIZATIONS.md) for a comprehensive overview. See [docs/DEPLOYMENT_APPROACHES_TUTORIAL.md](docs/DEPLOYMENT_APPROACHES_TUTORIAL.md) for a tutorial comparing the Full Command Reference vs Docker Compose approaches. See [docs/CODE_GUIDE.md](docs/CODE_GUIDE.md), [docs/DOCKER_GUIDE.md](docs/DOCKER_GUIDE.md), [docs/AUTH_GUIDE.md](docs/AUTH_GUIDE.md), [docs/LOGGING_GUIDE.md](docs/LOGGING_GUIDE.md), [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md), [docs/CI_GUIDE.md](docs/CI_GUIDE.md).

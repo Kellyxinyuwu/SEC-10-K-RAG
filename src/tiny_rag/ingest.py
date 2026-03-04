@@ -1,5 +1,5 @@
 """
-Tiny RAG ingestion: load 10-K txt files, chunk with overlap, embed, store in pgvector.
+SEC-10-K-RAG ingestion: load 10-K txt files, chunk with overlap, embed, store in pgvector.
 
 GUIDE:
 ------
